@@ -21,7 +21,7 @@ impl Landmass {
             self.fill_area(map_data, current_pos);
         }
 
-        map_data[current_pos.x_usize()][current_pos.y_usize()] = Biomes::Placeholder;
+        map_data[current_pos.x_usize()][current_pos.y_usize()].tile_type = Biomes::Placeholder;
 
         true
     }
@@ -48,8 +48,8 @@ impl Landmass {
                     continue;
                 }
 
-                if is_valid_cell(map_data, new_x, new_y) {
-                    map_data[new_x as usize][new_y as usize] = Biomes::Placeholder;
+                if is_valid_cell(&(map_data.len() as u32), new_x, new_y) {
+                    map_data[new_x as usize][new_y as usize].tile_type = Biomes::Placeholder;
                 }
 
                 y_offset += 1;

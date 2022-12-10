@@ -24,12 +24,12 @@ impl Generators {
     }
 }
 
-pub fn is_valid_cell(map_data: &MapData, x: i32, y: i32) -> bool {
+pub fn is_valid_cell(map_size: &u32, x: i32, y: i32) -> bool {
     if x < 0 || y < 0 {
         return false;
     }
 
-    if x >= map_data.len() as i32 || y >= map_data.len() as i32 {
+    if x >= *map_size as i32 || y >= *map_size as i32 {
         return false;
     }
 

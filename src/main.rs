@@ -8,13 +8,13 @@ struct GeneratorArgs {
     #[arg(long, default_value_t = String::new())]
     seed: String,
 
-    #[arg(long, default_value_t = 250)]
+    #[arg(long, default_value_t = 200)]
     size: u32,
 
     #[arg(long, default_value_t = 2)]
     rivers: u32,
 
-    #[arg(long, default_value_t = 250)]
+    #[arg(long, default_value_t = 400)]
     steppers: u32,
 
     #[arg(long, default_value_t = 300)]
@@ -36,11 +36,9 @@ async fn main() {
             .collect();
     }
 
-    println!("Generating map of size {} with {} rivers.", args.size, args.rivers);
-
     let mut generator = Generator::new(args.seed, args.size, args.rivers, args.steppers, args.steps);
 
     generator.generate().await;
-    // generator.output_file();
-    generator.output_image();
+    generator.output_image("output.png".to_string(), 4);
+    generator.output_file("output.txt".to_string());
 }

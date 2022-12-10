@@ -1,12 +1,13 @@
 use rand::Rng;
 use rand_pcg::Pcg64;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct MoveDirection {
     pub x: i32,
     pub y: i32,
 }
 
+#[derive(Copy, Clone, Debug)]
 pub enum Direction {
     North,
     South,
