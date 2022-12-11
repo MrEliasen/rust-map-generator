@@ -39,6 +39,6 @@ async fn main() {
     let mut generator = Generator::new(args.seed, args.size, args.rivers, args.steppers, args.steps);
 
     generator.generate().await;
-    generator.output_image("output.png".to_string(), 4);
+    generator.output_image("output.png".to_string(), 5);
     generator.output_file("output.txt".to_string());
 }

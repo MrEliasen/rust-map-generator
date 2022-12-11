@@ -62,12 +62,12 @@ const WHITTAKER: [[Biomes; 6]; 4] = [
 impl Biomes {
     pub fn get_symbol(&self) -> &str {
         match self {
-            Biomes::Placeholder => "",
+            Biomes::Placeholder => " ",
             Biomes::Void => "",
             Biomes::FreshWater => "=",
             Biomes::SaltWater => "~",
             Biomes::Land => "",
-            Biomes::Beach => "-",
+            Biomes::Beach => "B",
             Biomes::Taiga => "1",
             Biomes::SubtropicalDesert => "2",
             Biomes::Grassland => "3",
@@ -78,7 +78,7 @@ impl Biomes {
             Biomes::TemperateRainForest => "8",
             Biomes::Shrubland => "9",
             Biomes::Scorched => "0",
-            Biomes::Bare => "b",
+            Biomes::Bare => ".",
             Biomes::Tundra => "t",
             Biomes::Snow => "s",
         }
@@ -175,6 +175,36 @@ impl Biome {
         self.tile_type.get_colour()
     }
 
+    pub fn get_elevation_colour(&self) -> Rgb<u8> {
+        if self.get_tile_name() == Biomes::SaltWater.get_name() {
+            return self.get_tile_colour();
+        }
+
+        match self.elevation {
+            1 => image::Rgb([0, 0, 0]),
+            2 => image::Rgb([89, 89, 89]),
+            3 => image::Rgb([184, 184, 184]),
+            4 => image::Rgb([255, 255, 255]),
+            _ => image::Rgb([199, 0, 57]),
+        }
+    }
+
+    pub fn get_moisture_colour(&self) -> Rgb<u8> {
+        if self.get_tile_name() == Biomes::SaltWater.get_name() {
+            return image::Rgb([199, 0, 57]);
+        }
+
+        match self.moisture {
+            1 => image::Rgb([224, 224, 224]),
+            2 => image::Rgb([112, 112, 112]),
+            3 => image::Rgb([234, 242, 255]),
+            4 => image::Rgb([125, 174, 254]),
+            5 => image::Rgb([16, 106, 255]),
+            6 => image::Rgb([0, 11, 213]),
+            _ => image::Rgb([0, 0, 0]),
+        }
+    }
+
     pub fn calculate_biome(&mut self) {
         let mut moisture = self.moisture;
         let mut elevation = self.elevation;
@@ -195,6 +225,6 @@ impl Biome {
             moisture = 6;
         }
 
-        self.tile_type = WHITTAKER[(moisture - 1) as usize][(elevation - 1) as usize];
+        self.tile_type = WHITTAKER[(elevation - 1) as usize][(moisture - 1) as usize];
     }
 }
