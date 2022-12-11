@@ -81,7 +81,8 @@ impl Generator {
         self.flood_fill(Biomes::SaltWater, 0, 0, &mut ignored_tiles);
 
         // Replace last void tiles with fresh water
-        self.find_replace(Biomes::Void, Biomes::FreshWater);
+        self.find_replace(Biomes::Void, Biomes::FreshWater, true);
+        self.find_replace(Biomes::Void, Biomes::Placeholder, false);
 
         // generate elevation
         self.generate_elevation();
@@ -259,8 +260,9 @@ impl Generator {
         return closest.first().copied();
     }
 
-    fn find_replace(&mut self, find: Biomes, replace: Biomes) {
+    fn find_replace(&mut self, find: Biomes, replace: Biomes, ignore_solo_tiles: bool) {
         let find_type = find.get_name();
+        let mut replacements: Vec<(usize, usize)> = vec![];
 
         for x in 0..self.map_size {
             for y in 0..self.map_size {
@@ -268,8 +270,24 @@ impl Generator {
                     continue;
                 }
 
-                self.map_data[x as usize][y as usize].tile_type = replace;
+                if ignore_solo_tiles {
+                    let neighbours: Vec<MapPosition> = self.get_tile_neighbours(
+                        &MapPosition { x: x as i32, y: y as i32 },
+                        &self.map_data[x as usize][y as usize].tile_type,
+                        false
+                    );
+
+                    if neighbours.len() == 0 {
+                        continue;
+                    }
+                }
+
+                replacements.push((x as usize, y as usize));
             }
+        }
+
+        for tile in replacements {
+            self.map_data[tile.0][tile.1].tile_type = replace;
         }
     }
 
