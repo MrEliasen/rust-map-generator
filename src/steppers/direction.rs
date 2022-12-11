@@ -7,6 +7,21 @@ pub struct MoveDirection {
     pub y: i32,
 }
 
+impl PartialEq for MoveDirection {
+    fn eq(&self, other: &Self) -> bool {
+        return format!("{}_{}", self.x, self.y) == format!("{}_{}", other.x, other.y);
+    }
+}
+
+impl MoveDirection {
+    pub fn opposite_direction(&self) -> MoveDirection {
+        MoveDirection {
+            x: self.x * -1,
+            y: self.y * -1,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum Direction {
     North,
@@ -62,8 +77,13 @@ impl Direction {
     }
 }
 
-pub fn pick_random_direction(rng: &mut Pcg64) -> MoveDirection {
-    let x = rng.gen_range(0..4);
+pub fn pick_random_direction(rng: &mut Pcg64, exlude_direction: Option<MoveDirection>) -> MoveDirection {
+    let mut dirs = Direction::get_standard_directions();
 
-    return Direction::get_standard_directions()[x];
+    if exlude_direction.is_some() {
+        dirs = dirs.into_iter().filter(|a| *a != exlude_direction.unwrap()).collect();
+    }
+
+    let x = rng.gen_range(0..dirs.len());
+    dirs[x]
 }

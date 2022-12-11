@@ -62,15 +62,20 @@ impl Stepper {
             x: self.map_size / 2,
             y: self.map_size / 2,
         };
-
-        let mut last_direction: MoveDirection = pick_random_direction(&mut self.rng);
+        let mut last_direction: MoveDirection = pick_random_direction(
+            &mut self.rng,
+            None,
+        );
         let mut current_direction: MoveDirection = last_direction;
         let mut last_direction_steps: u32 = 0;
         let stepper_generator = generator.get_generator();
 
         while steps_left > 0 {
             if self.rng.gen_range(0..=1) == 1 {
-                current_direction = pick_random_direction(&mut self.rng);
+                current_direction = pick_random_direction(
+                    &mut self.rng,
+                    Some(last_direction.opposite_direction()),
+                );
             }
 
             current_pos.x = current_pos.x + current_direction.x;
@@ -84,7 +89,7 @@ impl Stepper {
                 current_pos.y += (current_direction.y * 2) * -1;
             }
 
-            if matches!(last_direction, _current_direction) {
+            if last_direction != current_direction {
                 last_direction_steps = 0;
                 last_direction = current_direction;
             }
