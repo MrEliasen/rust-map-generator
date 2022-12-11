@@ -1,5 +1,6 @@
-use rand_seeder::{Seeder};
+use rand::Rng;
 use rand_pcg::Pcg64;
+use rand_seeder::{Seeder};
 use image::{ImageBuffer, RgbImage};
 use std::fs::File;
 use std::io::Write;
@@ -22,7 +23,7 @@ pub struct Generator {
     steppers: u32,
     steps: u32,
     map_data: MapData,
-    _rng: Pcg64,
+    rng: Pcg64,
 }
 
 impl Generator {
@@ -37,31 +38,16 @@ impl Generator {
             steppers,
             steps,
             map_data: vec![vec![Biome::new_empty(); map_size as usize]; map_size as usize],
-            _rng: rng,
+            rng: rng,
         }
     }
 
-    pub async fn generate(&mut self) {
-        self.run().await;
+    pub fn generate(&mut self) {
+        self.run();
     }
 
-    async fn run(&mut self) {
-        let land_stepper = Generators::LandGenerator;
-
-        for index in 0..self.steppers {
-            let mut seed = String::from(&self.seed);
-            seed.push_str(&index.to_string());
-
-            let rng = Seeder::from(seed).make_rng();
-
-            let mut stepper = Stepper::create(
-                rng,
-                self.map_size,
-                self.steps,
-            );
-
-            stepper.run(&mut self.map_data, land_stepper).await;
-        }
+    fn run(&mut self) {
+        self.generate_landmass();
 
         // post process the raw map
         self.post_proccess();
@@ -88,7 +74,7 @@ impl Generator {
         self.generate_elevation();
      
         // create rivers
-        // to-do
+        // self._generate_rivers();
 
         // calculate the moisture for each placeholder cell
         self.generate_moisture(); 
@@ -106,6 +92,44 @@ impl Generator {
                 self.map_data[x as usize][y as usize].calculate_biome();
             }
         }
+    }
+
+    fn generate_landmass(&mut self) {
+        let land_stepper = Generators::LandGenerator;
+        let mut start_positions: Vec<MapPosition> = Vec::new();
+        let base_offset = self.map_size / 2;
+        let max_offset = base_offset / 2;
+
+        for _ in 0..self.rng.gen_range(1..=10) {
+            let x_offset = self.rng.gen_range((max_offset as i32 * -1)..=max_offset as i32);
+            let y_offset = self.rng.gen_range((max_offset as i32* -1)..=max_offset as i32);
+
+            start_positions.push(MapPosition {
+                x: base_offset as i32 + x_offset,
+                y: base_offset as i32 + y_offset
+            });
+        }
+
+        for index in 0..self.steppers {
+            let mut seed = String::from(&self.seed);
+            seed.push_str(&index.to_string());
+            let mut rng: Pcg64 = Seeder::from(seed).make_rng();
+
+            let position = start_positions[rng.gen_range(0..start_positions.len())];
+
+            let mut stepper = Stepper::create(
+                rng,
+                self.map_size,
+                self.steps,
+                position,
+            );
+
+            stepper.run(&mut self.map_data, land_stepper);
+        }
+    }
+
+    fn _generate_rivers(&self) {
+        unimplemented!();
     }
 
     fn generate_elevation(&mut self) {

@@ -40,6 +40,7 @@ pub struct Stepper {
     steps: u32,
     map_size: i32,
     rng: Pcg64,
+    start_pos: MapPosition,
     //startLocation: MapPosition,
     //blockedDirections: Vec<MapPosition>,
     //priorityDirection: Direction,
@@ -48,20 +49,17 @@ pub struct Stepper {
 }
 
 impl Stepper {
-    pub fn create(rng: Pcg64, map_size: u32, steps: u32) -> Self {
+    pub fn create(rng: Pcg64, map_size: u32, steps: u32, start_pos: MapPosition) -> Self {
         Self {
             map_size: map_size as i32,
-            steps: steps,
-            rng: rng,
+            steps,
+            rng,
+            start_pos,
         }
     }
 
-    pub async fn run(&mut self, map_data: &mut MapData, generator: Generators) {
+    pub fn run(&mut self, map_data: &mut MapData, generator: Generators) {
         let mut steps_left = self.steps;
-        let mut current_pos = MapPosition {
-            x: self.map_size / 2,
-            y: self.map_size / 2,
-        };
         let mut last_direction: MoveDirection = pick_random_direction(
             &mut self.rng,
             None,
@@ -69,6 +67,9 @@ impl Stepper {
         let mut current_direction: MoveDirection = last_direction;
         let mut last_direction_steps: u32 = 0;
         let stepper_generator = generator.get_generator();
+
+        // randomised a map position offset
+        let mut current_pos = self.start_pos;
 
         while steps_left > 0 {
             if self.rng.gen_range(0..=1) == 1 {
@@ -95,8 +96,6 @@ impl Stepper {
             }
 
             last_direction_steps += 1;
-
-            // this.stepsHistory.push({ x: stepperX, y: stepperY });
 
             let proceed = stepper_generator.on_step(map_data, current_pos, last_direction_steps);
 

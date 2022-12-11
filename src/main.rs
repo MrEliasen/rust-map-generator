@@ -8,7 +8,7 @@ struct GeneratorArgs {
     #[arg(long, default_value_t = String::new())]
     seed: String,
 
-    #[arg(long, default_value_t = 250)]
+    #[arg(long, default_value_t = 300)]
     size: u32,
 
     #[arg(long, default_value_t = 2)]
@@ -17,18 +17,17 @@ struct GeneratorArgs {
     #[arg(long, default_value_t = false)]
     debug: bool,
 
-    #[arg(long, default_value_t = 300)]
+    #[arg(long, default_value_t = 350)]
     steppers: u32,
 
-    #[arg(long, default_value_t = 500)]
+    #[arg(long, default_value_t = 300)]
     steps: u32,
 
     #[arg(long, default_value_t = String::new())]
     output_file: String,
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let mut args = GeneratorArgs::parse();
 
     if args.seed.trim().is_empty() {
@@ -41,7 +40,7 @@ async fn main() {
 
     let mut generator = Generator::new(args.debug, args.seed, args.size, args.rivers, args.steppers, args.steps);
 
-    generator.generate().await;
+    generator.generate();
     generator.output_image("output.png".to_string(), 4);
     generator.output_file("output.txt".to_string());
 }

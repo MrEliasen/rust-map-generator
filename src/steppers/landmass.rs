@@ -17,6 +17,10 @@ impl Landmass {
         current_pos: MapPosition,
         last_direction_steps: u32,
     ) -> bool {
+        if !is_valid_cell(&(map_data.len() as u32), current_pos.x, current_pos.y) {
+            return false;
+        }
+
         if last_direction_steps == 3 {
             self.fill_area(map_data, current_pos);
         }
