@@ -1,8 +1,7 @@
-use crate::biomes::Biomes;
-use crate::steppers::MapData;
+use crate::helper::is_valid_cell;
+use crate::MapData;
+use crate::biomes::biomes::Biomes;
 use crate::steppers::MapPosition;
-
-use super::is_valid_cell;
 
 pub struct Landmass {}
 

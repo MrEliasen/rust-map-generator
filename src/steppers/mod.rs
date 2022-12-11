@@ -1,15 +1,16 @@
 use rand::Rng;
-use crate::generator::MapData;
+use crate::MapData;
 use crate::steppers::direction::pick_random_direction;
 use crate::steppers::map_position::MapPosition;
 use rand_pcg::Pcg64;
 
-use self::direction::MoveDirection;
 use self::landmass::Landmass;
+use self::move_direction::MoveDirection;
 
 pub mod landmass;
 pub mod direction;
 pub mod map_position;
+pub mod move_direction;
 
 #[derive(Clone, Copy)]
 pub enum Generators {
@@ -24,28 +25,11 @@ impl Generators {
     }
 }
 
-pub fn is_valid_cell(map_size: &u32, x: i32, y: i32) -> bool {
-    if x < 0 || y < 0 {
-        return false;
-    }
-
-    if x >= *map_size as i32 || y >= *map_size as i32 {
-        return false;
-    }
-
-    return true;
-}
-
 pub struct Stepper {
     steps: u32,
     map_size: i32,
     rng: Pcg64,
     start_pos: MapPosition,
-    //startLocation: MapPosition,
-    //blockedDirections: Vec<MapPosition>,
-    //priorityDirection: Direction,
-    //priorityPercent: f32,
-    // stepsHistory: Vec<Vec<MapPosition>>,
 }
 
 impl Stepper {

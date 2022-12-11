@@ -2,6 +2,11 @@ use clap::Parser;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use rust_map_gen::generator::Generator;
+use rust_map_gen::generator::Config::{
+    Debug,
+    Steppers,
+    Steps,
+};
 
 #[derive(Parser, Debug)]
 struct GeneratorArgs {
@@ -23,6 +28,9 @@ struct GeneratorArgs {
     #[arg(long, default_value_t = 300)]
     steps: u32,
 
+    #[arg(long, default_value_t = 4)]
+    output_multiplier: u32,
+
     #[arg(long, default_value_t = String::new())]
     output_file: String,
 }
@@ -38,9 +46,11 @@ fn main() {
             .collect();
     }
 
-    let mut generator = Generator::new(args.debug, args.seed, args.size, args.rivers, args.steppers, args.steps);
-
-    generator.generate();
-    generator.output_image("output.png".to_string(), 4);
-    generator.output_file("output.txt".to_string());
+    Generator::new(args.seed, args.size)
+        .set(Debug(args.debug))
+        .set(Steppers(args.steppers))
+        .set(Steps(args.steps))
+        .generate()
+        .output_image("output.png".to_string(), args.output_multiplier)
+        .output_file("output.txt".to_string());
 }

@@ -1,3 +1,6 @@
+use crate::helper::is_valid_cell;
+use crate::biomes::biomes::Biomes;
+use crate::Biome;
 use rand::Rng;
 use rand_pcg::Pcg64;
 use rand_seeder::{Seeder};
@@ -5,45 +8,63 @@ use image::{ImageBuffer, RgbImage};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use crate::MapData;
 use crate::helper::get_distance;
-use crate::steppers::{Generators, is_valid_cell};
-use crate::biomes::{Biomes, Biome};
+use crate::steppers::Generators;
 use crate::steppers::Stepper;
 use crate::steppers::direction::{Direction};
 use crate::steppers::map_position::MapPosition;
 use std::collections::VecDeque;
 
-pub type MapData = Vec<Vec<Biome>>;
+pub enum Config {
+    Seed(String),
+    MapSize(u32),
+    Steppers(u32),
+    Steps(u32),
+    Debug(bool),
+}
 
 pub struct Generator {
-    debug: bool,
     seed: String,
     map_size: u32,
-    _rivers: u32,
-    steppers: u32,
-    steps: u32,
+    debug: Option<bool>,
+    steppers: Option<u32>,
+    steps: Option<u32>,
     map_data: MapData,
     rng: Pcg64,
 }
 
 impl Generator {
-    pub fn new(debug: bool, seed: String, map_size: u32, _rivers: u32, steppers: u32, steps: u32) -> Self {
+    pub fn new(seed: String, map_size: u32) -> Self {
         let rng = Seeder::from(&seed).make_rng();
 
         Self {
-            debug,
             seed,
-            map_size,
-            _rivers,
-            steppers,
-            steps,
             map_data: vec![vec![Biome::new_empty(); map_size as usize]; map_size as usize],
             rng: rng,
+            debug: None,
+            steppers: None,
+            steps: None,
+            map_size,
         }
     }
 
-    pub fn generate(&mut self) {
+    pub fn set(&mut self, config: Config) -> &mut Self  {
+        match config {
+            Config::Seed(x) => self.seed = x,
+            Config::MapSize(x) => self.map_size = x,
+            Config::Steppers(x) => self.steppers = Some(x),
+            Config::Steps(x) => self.steps = Some(x),
+            Config::Debug(x) => self.debug = Some(x),
+        }
+
+        self
+    }
+
+    pub fn generate(&mut self) -> &mut Self{
         self.run();
+
+        self
     }
 
     fn run(&mut self) {
@@ -52,6 +73,7 @@ impl Generator {
         // post process the raw map
         self.post_proccess();
 
+        // flood fill with salt water
         let mut ignored_tiles: Vec<MapPosition> = Vec::new();
         let void = Biomes::Void.get_name();
 
@@ -63,7 +85,6 @@ impl Generator {
             }
         }
 
-        // flood fill with salt water
         self.flood_fill(Biomes::SaltWater, 0, 0, &mut ignored_tiles);
 
         // Replace last void tiles with fresh water
@@ -110,7 +131,7 @@ impl Generator {
             });
         }
 
-        for index in 0..self.steppers {
+        for index in 0..self.steppers.unwrap() {
             let mut seed = String::from(&self.seed);
             seed.push_str(&index.to_string());
             let mut rng: Pcg64 = Seeder::from(seed).make_rng();
@@ -120,7 +141,7 @@ impl Generator {
             let mut stepper = Stepper::create(
                 rng,
                 self.map_size,
-                self.steps,
+                self.steps.unwrap(),
                 position,
             );
 
@@ -435,7 +456,7 @@ impl Generator {
         return neighbours;
     }
 
-    pub fn output_file(&self, file_name: String) {
+    pub fn output_file(&mut self, file_name: String) -> &mut Self{
         let path = Path::new(&file_name);
         let display = path.display();
 
@@ -443,7 +464,6 @@ impl Generator {
             Ok(file) => file,
             Err(msg) => panic!("could not create {}: {}", display, msg),
         };
-
 
         file.write_all(format!("Seed: {}", &self.seed).as_bytes()).unwrap();
         file.write_all("\n\nElevation:\n".as_bytes()).unwrap();
@@ -479,10 +499,12 @@ impl Generator {
 
         file.write_all(format!("\n\nSeed: {}", &self.seed).as_bytes())
             .unwrap();
+
+        self
     }
 
-    pub fn output_image(&self, file_name: String, draw_multiplier: u32) {
-        let debug_multiplier = if self.debug { 3 } else { 1 };
+    pub fn output_image(&mut self, file_name: String, draw_multiplier: u32) -> &mut Self {
+        let debug_multiplier = if self.debug.is_some() && self.debug.unwrap() { 3 } else { 1 };
         let mut image: RgbImage = ImageBuffer::new(self.map_size * draw_multiplier, (self.map_size * draw_multiplier) * debug_multiplier);
         let mut offset = 0;
 
@@ -502,7 +524,7 @@ impl Generator {
             }
         }
 
-        if self.debug {
+        if self.debug.is_some() && self.debug.unwrap() {
             offset += self.map_size * draw_multiplier;
 
             // render map
@@ -542,5 +564,7 @@ impl Generator {
 
         // write it out to a file
         image.save(&file_name).unwrap();
+
+        self
     }
 }
