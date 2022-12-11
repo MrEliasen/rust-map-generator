@@ -617,17 +617,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust_map_gen"
-version = "0.1.0"
-dependencies = [
- "clap",
- "image",
- "rand",
- "rand_pcg",
- "rand_seeder",
-]
-
-[[package]]
 name = "rustix"
 version = "0.36.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -791,6 +780,17 @@ name = "weezl"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9193164d4de03a926d909d3bc7c30543cecb35400c02114792c2cae20d5e2dbb"
+
+[[package]]
+name = "whittaker_map_generator"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "image",
+ "rand",
+ "rand_pcg",
+ "rand_seeder",
+]
 
 [[package]]
 name = "winapi"

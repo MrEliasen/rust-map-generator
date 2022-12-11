@@ -1,9 +1,9 @@
 use clap::Parser;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
-use rust_map_gen::generator::Generator;
-use rust_map_gen::generator::Config::{
-    Debug,
+use whittaker_map_generator::generator::Generator;
+use whittaker_map_generator::generator::Config::{
+    Debugging,
     Steppers,
     Steps,
 };
@@ -47,7 +47,7 @@ fn main() {
     }
 
     Generator::new(args.seed, args.size)
-        .set(Debug(args.debug))
+        .set(Debugging(args.debug))
         .set(Steppers(args.steppers))
         .set(Steps(args.steps))
         .generate()

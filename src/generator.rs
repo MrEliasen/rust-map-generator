@@ -21,7 +21,7 @@ pub enum Config {
     MapSize(u32),
     Steppers(u32),
     Steps(u32),
-    Debug(bool),
+    Debugging(bool),
 }
 
 pub struct Generator {
@@ -55,7 +55,7 @@ impl Generator {
             Config::MapSize(x) => self.map_size = x,
             Config::Steppers(x) => self.steppers = Some(x),
             Config::Steps(x) => self.steps = Some(x),
-            Config::Debug(x) => self.debug = Some(x),
+            Config::Debugging(x) => self.debug = Some(x),
         }
 
         self
