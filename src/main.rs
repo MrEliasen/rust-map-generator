@@ -8,16 +8,19 @@ struct GeneratorArgs {
     #[arg(long, default_value_t = String::new())]
     seed: String,
 
-    #[arg(long, default_value_t = 200)]
+    #[arg(long, default_value_t = 250)]
     size: u32,
 
     #[arg(long, default_value_t = 2)]
     rivers: u32,
 
-    #[arg(long, default_value_t = 400)]
-    steppers: u32,
+    #[arg(long, default_value_t = false)]
+    debug: bool,
 
     #[arg(long, default_value_t = 300)]
+    steppers: u32,
+
+    #[arg(long, default_value_t = 500)]
     steps: u32,
 
     #[arg(long, default_value_t = String::new())]
@@ -36,9 +39,9 @@ async fn main() {
             .collect();
     }
 
-    let mut generator = Generator::new(args.seed, args.size, args.rivers, args.steppers, args.steps);
+    let mut generator = Generator::new(args.debug, args.seed, args.size, args.rivers, args.steppers, args.steps);
 
     generator.generate().await;
-    generator.output_image("output.png".to_string(), 5);
+    generator.output_image("output.png".to_string(), 4);
     generator.output_file("output.txt".to_string());
 }

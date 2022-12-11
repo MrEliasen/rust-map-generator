@@ -15,6 +15,7 @@ use std::collections::VecDeque;
 pub type MapData = Vec<Vec<Biome>>;
 
 pub struct Generator {
+    debug: bool,
     seed: String,
     map_size: u32,
     _rivers: u32,
@@ -25,10 +26,11 @@ pub struct Generator {
 }
 
 impl Generator {
-    pub fn new(seed: String, map_size: u32, _rivers: u32, steppers: u32, steps: u32) -> Self {
+    pub fn new(debug: bool, seed: String, map_size: u32, _rivers: u32, steppers: u32, steps: u32) -> Self {
         let rng = Seeder::from(&seed).make_rng();
 
         Self {
+            debug,
             seed,
             map_size,
             _rivers,
@@ -437,8 +439,9 @@ impl Generator {
             .unwrap();
     }
 
-    pub fn output_image(&self, file_name: String, multiplier: u32) {
-        let mut image: RgbImage = ImageBuffer::new(self.map_size * multiplier, (self.map_size * multiplier) * 3);
+    pub fn output_image(&self, file_name: String, draw_multiplier: u32) {
+        let debug_multiplier = if self.debug { 3 } else { 1 };
+        let mut image: RgbImage = ImageBuffer::new(self.map_size * draw_multiplier, (self.map_size * draw_multiplier) * debug_multiplier);
         let mut offset = 0;
 
         // render map
@@ -446,10 +449,10 @@ impl Generator {
             for (y, tile) in col.iter().enumerate() {
                 let tile_colour = tile.get_tile_colour();
 
-                for x_step in 0..multiplier {
-                    for y_step in 0..multiplier {
-                        let my = y as u32 * multiplier + y_step;
-                        let mx = x as u32 * multiplier + x_step;
+                for x_step in 0..draw_multiplier {
+                    for y_step in 0..draw_multiplier {
+                        let my = y as u32 * draw_multiplier + y_step;
+                        let mx = x as u32 * draw_multiplier + x_step;
 
                         image.put_pixel(mx as u32, my as u32, tile_colour);
                     }
@@ -457,37 +460,39 @@ impl Generator {
             }
         }
 
-        offset += self.map_size * multiplier;
+        if self.debug {
+            offset += self.map_size * draw_multiplier;
 
-        // render map
-        for (x, col) in self.map_data.iter().enumerate() {
-            for (y, tile) in col.iter().enumerate() {
-                let moisture = tile.get_moisture_colour();
+            // render map
+            for (x, col) in self.map_data.iter().enumerate() {
+                for (y, tile) in col.iter().enumerate() {
+                    let moisture = tile.get_moisture_colour();
 
-                for x_step in 0..multiplier {
-                    for y_step in 0..multiplier {
-                        let my = y as u32 * multiplier + y_step + offset;
-                        let mx = x as u32 * multiplier + x_step;
+                    for x_step in 0..draw_multiplier {
+                        for y_step in 0..draw_multiplier {
+                            let my = y as u32 * draw_multiplier + y_step + offset;
+                            let mx = x as u32 * draw_multiplier + x_step;
 
-                        image.put_pixel(mx as u32, my as u32, moisture);
+                            image.put_pixel(mx as u32, my as u32, moisture);
+                        }
                     }
                 }
             }
-        }
 
-        offset += self.map_size * multiplier;
+            offset += self.map_size * draw_multiplier;
 
-        // render map
-        for (x, col) in self.map_data.iter().enumerate() {
-            for (y, tile) in col.iter().enumerate() {
-                let elevation = tile.get_elevation_colour();
+            // render map
+            for (x, col) in self.map_data.iter().enumerate() {
+                for (y, tile) in col.iter().enumerate() {
+                    let elevation = tile.get_elevation_colour();
 
-                for x_step in 0..multiplier {
-                    for y_step in 0..multiplier {
-                        let my = y as u32 * multiplier + y_step + offset;
-                        let mx = x as u32 * multiplier + x_step;
+                    for x_step in 0..draw_multiplier {
+                        for y_step in 0..draw_multiplier {
+                            let my = y as u32 * draw_multiplier + y_step + offset;
+                            let mx = x as u32 * draw_multiplier + x_step;
 
-                        image.put_pixel(mx as u32, my as u32, elevation);
+                            image.put_pixel(mx as u32, my as u32, elevation);
+                        }
                     }
                 }
             }
