@@ -1,8 +1,11 @@
 [package]
-name = "rust_map_gen"
+name = "whittaker-map-generator"
 version = "0.1.0"
 edition = "2021"
-authors = ["Mark Eliasen <hello@sirmre.com>"]
+authors = ["Mark Eliasen <mark.eliasen@pm.me>"]
+description = "A map generator, generates biomed based on the Whittaker Diagram."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/MrEliasen/rust-map-generator"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
