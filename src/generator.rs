@@ -106,14 +106,15 @@ impl Generator {
     }
 
     fn generate_elevation(&mut self) {
-        let mut ground_elevations: Vec<(u32, u32, u32)> = Vec::new();
+        let mut ground_elevations: Vec<(u32, u32, f32)> = Vec::new();
         let map_size = self.map_size;
+        let placeholder = Biomes::Placeholder.get_name();
 
         for x in 0..map_size {
             for y in 0..map_size {
                 let tile = &self.map_data[x as usize][y as usize];
 
-                if tile.get_tile_name() != Biomes::Placeholder.get_name() {
+                if tile.get_tile_name() != placeholder {
                     continue;
                 }
 
@@ -123,30 +124,33 @@ impl Generator {
                     continue;
                 }
 
-                self.map_data[x as usize][y as usize].distance_from_sea = distance.unwrap() as u32;
-                ground_elevations.push((loc_x.unwrap(), loc_y.unwrap(), distance.unwrap() as u32));
+                ground_elevations.push((loc_x.unwrap(), loc_y.unwrap(), distance.unwrap()));
             }
         }
 
         // // sort by distance
-        ground_elevations.sort_by(|a, b| b.2.cmp(&a.2));
+        ground_elevations.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
+
+        dbg!(ground_elevations.first(), ground_elevations.last());
 
         // normalise the distances by deviding the biggest distance by 4
-        let per_elevation = ground_elevations.first().unwrap().2 / 4;
+        let per_elevation = ground_elevations.first().unwrap().2 / 4.0;
+        dbg!(per_elevation);
 
         for tile in ground_elevations {
             let mut elevation = tile.2 / per_elevation;
 
-            if elevation == 0 {
-                elevation = 1;
+            if elevation == 0.0 {
+                elevation = 1.0;
             }
 
-            self.map_data[tile.0 as usize][tile.1 as usize].elevation = elevation;
+            self.map_data[tile.0 as usize][tile.1 as usize].distance_from_sea = tile.2 as u32;
+            self.map_data[tile.0 as usize][tile.1 as usize].elevation = elevation as u32;
         }
     }
 
     fn generate_moisture(&mut self) {
-        let mut moistures: Vec<(u32, u32, u32)> = Vec::new();
+        let mut moistures: Vec<(u32, u32, f32)> = Vec::new();
         let map_size = self.map_size;
 
         for x in 0..map_size {
@@ -163,24 +167,27 @@ impl Generator {
                     continue;
                 }
 
-                self.map_data[x as usize][y as usize].distance_from_fresh_water = distance.unwrap() as u32;
-                moistures.push((loc_x.unwrap(), loc_y.unwrap(), distance.unwrap() as u32));
+                moistures.push((loc_x.unwrap(), loc_y.unwrap(), distance.unwrap()));
             }
         }
 
         // // sort by distance
-        moistures.sort_by(|a, b| b.2.cmp(&a.2));
+        moistures.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
+
+        dbg!(moistures.first(), moistures.last());
 
         // // normalise the distances by deviding the biggest distance by 4
-        let per_moisture_stage = moistures.first().unwrap().2 / 6;
+        let per_moisture_stage = moistures.first().unwrap().2 / 6.0;
+        dbg!(per_moisture_stage);
 
         for tile in moistures {
-            let mut moisture = 6 - tile.2 / per_moisture_stage + 1;
+            let mut moisture = 6 - (tile.2 / per_moisture_stage).ceil() as u32 + 1;
 
             if moisture > 6 {
                 moisture = 6;
             }
 
+            self.map_data[tile.0 as usize][tile.1 as usize].distance_from_fresh_water = tile.2 as u32;
             self.map_data[tile.0 as usize][tile.1 as usize].moisture = moisture;
         }
     }
@@ -212,18 +219,18 @@ impl Generator {
     }
 
     fn get_distance(&self, from_x: u32, from_y: u32, to_x: u32, to_y: u32) -> f32{
-        let y = from_x as f32 - to_x as f32;
-        let x = from_y as f32 - to_y as f32;
+        let y = to_x as f32 - from_x as f32;
+        let x = to_y as f32 - from_y as f32;
 
         return f32::sqrt(x * x + y * y);
     }
 
-    fn find_nearest(&mut self, x: u32, y: u32, of_type: Biomes) -> (Option<u32>, Option<u32>, Option<u32>) {
+    fn find_nearest(&mut self, x: u32, y: u32, of_type: Biomes) -> (Option<u32>, Option<u32>, Option<f32>) {
         let type_name = of_type.get_name();
 
         let mut closest_x: Option<u32> = None;
         let mut closest_y: Option<u32> = None;
-        let mut closest_distance: Option<u32> = None;
+        let mut closest_distance: Option<f32> = None;
 
         // Iterate over the outer Vec.
         for (nx, col) in self.map_data.iter().enumerate() {
@@ -235,10 +242,10 @@ impl Generator {
 
                 let distance = self.get_distance(x, y, nx as u32, ny as u32) as u32;
 
-                if closest_distance.is_none() || distance < closest_distance.unwrap() {
+                if closest_distance.is_none() || (distance as f32) < closest_distance.unwrap() {
                     closest_x = Some(nx as u32);
                     closest_y = Some(ny as u32);
-                    closest_distance = Some(distance as u32);
+                    closest_distance = Some(distance as f32);
                 }
             }
         }
