@@ -1,6 +1,6 @@
 [package]
 name = "whittaker_map_generator"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Mark Eliasen <mark.eliasen@pm.me>"]
 description = "A map generator, generates biomed based on the Whittaker Diagram."
