@@ -85,7 +85,7 @@ impl Generator {
             }
         }
 
-        self.flood_fill(Biomes::SaltWater, 0, 0, &mut ignored_tiles);
+        self.flood_fill(Biomes::Void, Biomes::SaltWater, 0, 0, &mut ignored_tiles);
 
         // Replace last void tiles with fresh water
         self.find_replace(Biomes::Void, Biomes::FreshWater, true);
@@ -121,9 +121,9 @@ impl Generator {
         let base_offset = self.map_size / 2;
         let max_offset = base_offset / 2;
 
-        for _ in 0..self.rng.gen_range(1..=10) {
+        for _ in 0..self.rng.gen_range(1..=20) {
             let x_offset = self.rng.gen_range((max_offset as i32 * -1)..=max_offset as i32);
-            let y_offset = self.rng.gen_range((max_offset as i32* -1)..=max_offset as i32);
+            let y_offset = self.rng.gen_range((max_offset as i32 * -1)..=max_offset as i32);
 
             start_positions.push(MapPosition {
                 x: base_offset as i32 + x_offset,
@@ -336,7 +336,7 @@ impl Generator {
         }
     }
 
-    fn flood_fill(&mut self, biome: Biomes, start_row: i32, start_col: i32, ignore: &mut Vec<MapPosition>) {
+    fn flood_fill(&mut self, fill_biome: Biomes, with_biome: Biomes, start_row: i32, start_col: i32, ignore: &Vec<MapPosition>) {
         let rows = self.map_size as i32;
         let cols = self.map_size as i32;
         let mut queue = VecDeque::new();
@@ -351,7 +351,12 @@ impl Generator {
         while let Some((row, col)) = queue.pop_front() {
             if row >= 0 && row < rows && col >= 0 && col < cols && !visited[row as usize][col as usize] {
                 visited[row as usize][col as usize] = true;
-                self.map_data[row as usize][col as usize].tile_type = biome;
+
+                if self.map_data[row as usize][col as usize].get_tile_name() != fill_biome.get_name() {
+                    continue;
+                }
+
+                self.map_data[row as usize][col as usize].tile_type = with_biome;
 
                 queue.push_back((row + 1, col));
                 queue.push_back((row - 1, col));

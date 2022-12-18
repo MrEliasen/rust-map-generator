@@ -58,13 +58,8 @@ impl Direction {
     }
 }
 
-pub fn pick_random_direction(rng: &mut Pcg64, exlude_direction: Option<MoveDirection>) -> MoveDirection {
+pub fn pick_random_direction(rng: &mut Pcg64, exlude_directions: Vec<MoveDirection>) -> MoveDirection {
     let mut dirs = Direction::get_standard_directions();
-
-    if exlude_direction.is_some() {
-        dirs = dirs.into_iter().filter(|a| *a != exlude_direction.unwrap()).collect();
-    }
-
-    let x = rng.gen_range(0..dirs.len());
-    dirs[x]
+    dirs = dirs.into_iter().filter(|a| !exlude_directions.contains(a)).collect();
+    dirs[rng.gen_range(0..dirs.len())]
 }
